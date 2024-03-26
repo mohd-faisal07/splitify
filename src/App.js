@@ -1,4 +1,9 @@
 import { useEffect, useState } from "react";
+import { Button } from "./components/Button";
+import { FriendList } from "./components/FriendList";
+import { Heading } from "./components/Heading";
+import { FormAddFriend } from "./components/FormAddFriend";
+import { FormSplitBill } from "./components/FormSplitBill";
 
 const initialFriends = [
   {
@@ -20,13 +25,7 @@ const initialFriends = [
     balance: 0,
   },
 ];
-function Button({ children, onClick }) {
-  return (
-    <button className="button" onClick={onClick}>
-      {children}
-    </button>
-  );
-}
+
 export default function App() {
   const [friends, setFriends] = useState(function () {
     const storedValue = localStorage.getItem("local");
@@ -120,157 +119,5 @@ export default function App() {
         )}
       </div>
     </div>
-  );
-}
-
-function FriendList({ friends, onSelection, selectedFriend, onRemoveFriend }) {
-  return (
-    <ul>
-      {friends.map((friend) => (
-        <Friend
-          friend={friend}
-          key={friend.id}
-          selectedFriend={selectedFriend}
-          onSelection={onSelection}
-          onRemoveFriend={onRemoveFriend}
-        />
-      ))}
-    </ul>
-  );
-}
-function Friend({ friend, onSelection, selectedFriend, onRemoveFriend }) {
-  const isSelected = selectedFriend?.id === friend.id;
-  return (
-    <li className={isSelected ? "selected" : ""}>
-      {/* <img src={friend.image} alt={friend.id} /> */}
-      <div>
-        <h3>{friend.name}</h3>
-        {friend.balance < 0 && (
-          <p className="red">
-            {" "}
-            you owe {friend.name} ₹{Math.abs(friend.balance)}
-          </p>
-        )}
-
-        {friend.balance > 0 && (
-          <p className="green">
-            {" "}
-            {friend.name} owes you ₹{Math.abs(friend.balance)}
-          </p>
-        )}
-        {friend.balance === 0 && <p> you and {friend.name} are even</p>}
-      </div>
-      {/* <div className=""> */}
-      <button
-        className="btn-delete dialogCloseBtn listActionButtons"
-        onClick={() => onRemoveFriend(friend.id, friend.name)}
-      >
-        Delete
-      </button>
-      <Button onClick={() => onSelection(friend)}>Select</Button>
-      {/* </div> */}
-    </li>
-  );
-}
-function Heading() {
-  return (
-    <div className="headingContainer">
-      <h1 className="heading">Splitify</h1>
-      <p>Split bills with ease</p>
-    </div>
-  );
-}
-
-function FormAddFriend({ onAddFriend, handleShowAddFriend }) {
-  const [name, setName] = useState("");
-
-  function handleSubmit(e) {
-    e.preventDefault();
-    const id = new Date().getTime();
-
-    if (!name) return;
-
-    const newFriend = {
-      name,
-      id,
-      balance: 0,
-    };
-    onAddFriend(newFriend);
-
-    setName("");
-  }
-
-  return (
-    <dialog open className="DialogAddFriend">
-      <form className="form-add-friend" onSubmit={handleSubmit}>
-        <label> 🤼 Friend name </label>
-        <input
-          type="text"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
-
-        <button onClick={handleShowAddFriend} className="button dialogCloseBtn">
-          Close
-        </button>
-        <Button>Add</Button>
-      </form>
-    </dialog>
-  );
-}
-function FormSplitBill({
-  selectedFriend,
-  onSplit,
-  showSplitDialog,
-  closeDialog,
-}) {
-  const [bill, setBill] = useState("");
-  const [paidByUser, setPaidByUser] = useState("");
-  const paidByFriend = bill ? bill - paidByUser : "";
-  const [whoIsPaying, setWhoIsPaying] = useState("user");
-  function handleSubmit(e) {
-    e.preventDefault();
-    if (!bill || !paidByUser) return;
-
-    onSplit(whoIsPaying === "user" ? paidByFriend : -paidByUser);
-  }
-  return (
-    <dialog open={showSplitDialog} className="open-dialog">
-      <form className="form-split-bill" onSubmit={handleSubmit}>
-        <h2> Split bill with {selectedFriend.name}</h2>
-        <label> 💸 Enter total bill amount</label>
-        <input
-          type="number"
-          value={bill}
-          onChange={(e) => setBill(Number(e.target.value))}
-        />
-        <label> 💲 your expense</label>
-        <input
-          type="number"
-          value={paidByUser}
-          onChange={(e) =>
-            setPaidByUser(
-              Number(e.target.value) > bill
-                ? paidByUser
-                : Number(e.target.value)
-            )
-          }
-        />
-        <label> 👬 {selectedFriend.name}'s expense</label>
-        <input type="number" disabled value={paidByFriend} />
-        <label> 🤑 whos paying the bill</label>
-        <select
-          value={whoIsPaying}
-          onChange={(e) => setWhoIsPaying(e.target.value)}
-        >
-          <option value="user">you</option>
-          <option value="friend">{selectedFriend.name}</option>
-        </select>
-        <button className="button dialogCloseBtn" onClick={closeDialog}>
-          Close
-        </button>
-        <Button>Split bill</Button>
-      </form>
-    </dialog>
   );
 }
